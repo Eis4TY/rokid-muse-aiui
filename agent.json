@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "agentId": "develop.rokid.agent.b8978d4a-0fde-49b9-a58f-5e6262506798",
+  "agentName": "Muse 眼镜 Demo",
+  "agentDesc": "Muse 眼镜语音交互与设备连接验证",
+  "nativeVersion": "1.0.0",
+  "inkVersion": ">=0.17.0",
+  "permissions": [
+    "RECORD_AUDIO"
+  ],
+  "agentPrompt": "",
+  "agentLogo": ""
+}

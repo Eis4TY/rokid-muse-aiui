@@ -1,0 +1,24 @@
+.app { width:480px;height:352px;box-sizing:border-box;background-color:var(--color-background);color:var(--color-text-primary);padding:16px;display:flex;flex-direction:column;font-family:sans-serif; }
+.header { height:30px;display:flex;flex-direction:row;flex-shrink:0;align-items:center;justify-content:space-between;border-bottom:1px solid var(--color-primary-40); }
+.brand {font-size:18px;font-weight:500;}
+.connection {font-size:12px;color:var(--color-text-secondary);}
+.body {height:218px;flex-shrink:0;padding-top:12px;box-sizing:border-box;}
+.heading {display:block;font-size:18px;line-height:24px;margin-bottom:12px;}
+.thread {border:1px solid var(--color-primary-40);border-radius:4px;padding:14px;margin-bottom:16px;}
+.thread-title {display:block;font-size:20px;line-height:28px;}
+.secondary {display:block;font-size:15px;color:var(--color-text-secondary);line-height:23px;}
+.notice {display:block;font-size:14px;line-height:22px;color:var(--color-text-secondary);}
+.conversation {height:167px;}
+.draft {margin-top:10px;border-left:2px solid var(--color-primary);padding-left:10px;}
+.draft-label {display:block;font-size:12px;color:var(--color-text-secondary);}
+.draft-text {display:block;font-size:18px;line-height:27px;word-break:break-all;}
+.diagnostics {height:172px;}
+.diagnostic-line {display:block;font-size:14px;line-height:24px;word-break:break-all;}
+.footer {height:72px;border-top:1px solid var(--color-primary-40);padding-top:8px;box-sizing:border-box;}
+.actions {display:flex;flex-direction:row;align-items:center;gap:8px;}
+.action {display:flex;flex-direction:row;align-items:center;justify-content:center;width:auto;min-width:94px;box-sizing:border-box;height:36px;padding:0 12px;border:1px solid var(--color-primary-40);border-radius:4px;font-size:16px;color:var(--color-text-primary);background-color:var(--color-background);}
+.focused {border:2px solid var(--color-primary);background-color:var(--color-background);}
+.hint {display:block;font-size:12px;color:var(--color-text-secondary);margin-top:5px;}
+.toast {position:absolute;left:18px;bottom:83px;width:444px;padding:10px;box-sizing:border-box;border:1px solid var(--color-primary);background-color:var(--color-background);font-size:15px;line-height:22px;}
+
+.reply {margin-top:8px;margin-bottom:10px;}

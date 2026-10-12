@@ -1,0 +1,30 @@
+<view class="app">
+  <view class="header"><text class="brand">MUSE</text><text class="connection">{{status}}</text></view>
+  <view ink:if="{{surface === 'inbox'}}" class="body">
+    <text class="heading">会话</text>
+    <view class="thread"><text class="thread-title">Muse 眼镜会话</text><text class="secondary">长按说话，确认后发送</text></view>
+    <text class="notice">{{channelReady ? 'Muse 已在线，打开会话即可语音提问。' : '正在连接 Muse 云端，请稍候。'}}</text>
+  </view>
+  <view ink:if="{{surface === 'diagnostics'}}" class="body">
+    <text class="heading">连接诊断</text>
+    <scroll-view class="diagnostics" scroll-y="{{true}}">
+      <text ink:for="{{diagnostics}}" ink:key="id" class="diagnostic-line">{{item.text}}</text>
+    </scroll-view>
+  </view>
+  <view ink:if="{{surface === 'chat'}}" class="body">
+    <text class="heading">Muse 眼镜会话</text>
+    <scroll-view class="conversation" scroll-y="{{true}}" scroll-top="{{scrollTop}}">
+      <text class="secondary">{{listening ? '正在聆听，单击结束录音' : recognizing ? '正在整理录音，请稍候' : '长按触控板开始说话'}}</text>
+      <view ink:if="{{voiceNoteLabel}}" class="draft"><text class="draft-label">待发送语音</text><text class="draft-text">{{voiceNoteLabel}}</text></view>
+      <view ink:if="{{draft}}" class="draft"><text class="draft-label">待发送</text><text class="draft-text">{{draft}}</text></view>
+      <view ink:if="{{lastQuestion}}" class="reply"><text class="draft-label">你</text><text class="draft-text">{{lastQuestion}}</text></view>
+      <view ink:for="{{messages}}" ink:key="id" class="reply"><text class="draft-label">Muse {{item.done ? '' : '正在回复…'}}</text><text class="draft-text">{{item.text}}</text></view>
+      <text ink:if="{{!draft && !voiceNoteLabel && !messages.length}}" class="notice">{{channelReady ? 'Muse 在线，长按触控板输入问题。' : museReady ? 'Muse 已配对，云端会话通道尚未接入。' : 'Muse 尚未配对，暂时无法接收回复。'}}</text>
+    </scroll-view>
+  </view>
+  <view class="footer">
+    <view class="actions"><button ink:for="{{actions}}" ink:key="id" class="action {{focus === index ? 'focused' : ''}}" data-action="{{item.id}}" bindtap="handleAction">{{item.label}}</button></view>
+    <text class="hint">滑动选择 · 单击确认 · 双击返回</text>
+  </view>
+  <view ink:if="{{toast}}" class="toast"><text>{{toast}}</text></view>
+</view>

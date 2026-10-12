@@ -1,0 +1,48 @@
+# Version control and local metadata
+.git/**
+.gitignore
+.aixignore
+**/.DS_Store
+/env.json
+/scripts/pack-project.mjs
+
+# AI-assisted development and design snapshots
+.agents/
+.mastergo/
+
+# Development-only documentation and tests
+docs/**
+tests/
+dev/**
+README.md
+package.json
+skills-lock.json
+
+# Local build outputs and dependency caches
+node_modules/**
+coverage/**
+dist/**
+build/**
+*.aix
+VERSION
+
+# Legacy component-gallery assets unused by pages/index/index
+assets/icons/bubble-left.svg
+assets/icons/bubble-right.svg
+assets/icons/bubble-tail.svg
+assets/icons/codex.svg
+assets/icons/context.svg
+assets/icons/tool-call.svg
+assets/icons/unread-dot.svg
+
+agent.json
+package-lock.json
+
+.aix/**
+.zcode/**
+
+native-pairing/**
+AGENTS.md
+
+.pytest_cache/**
+**/__pycache__/**
