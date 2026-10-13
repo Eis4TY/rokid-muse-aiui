@@ -201,3 +201,10 @@ Apache License
    limitations under the License.
 
 
+
+Third-party attribution for lib/muse-avatar.js
+Copyright (c) Meta Platforms, Inc. and affiliates.
+Adapted from facebookincubator/muse-gadget-sdk, esp32/avatar/muse_pixel.c.
+Licensed under Apache License 2.0 above. Changes: JavaScript port, reusable
+buffers, AIUI Canvas output and monochrome-green palette conversion.
+The code license does not grant rights to Meta's default avatar character.

@@ -1,1 +1,13 @@
-{"description":"在眼镜上通过触控板和语音编辑 Muse 消息，并查看桥接与蓝牙连接状态。","schema":{"data":{"type":"object","properties":{"screen":{"type":"string","enum":["chat","diagnostics"]},"draft":{"type":"string"},"checkTransport":{"type":"string"}}}}}
+{
+  "description": "Displays Muse conversations, an animated pixel avatar, and connection status. Record and send voice messages, and scroll through replies using the touchpad.",
+  "schema": {
+    "data": {
+      "type": "object",
+      "properties": {
+        "draft": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

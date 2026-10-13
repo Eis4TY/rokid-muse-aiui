@@ -11,10 +11,11 @@
 .mastergo/
 
 # Development-only documentation and tests
-docs/**
 tests/
 dev/**
 README.md
+README.zh-CN.md
+media/**
 package.json
 skills-lock.json
 

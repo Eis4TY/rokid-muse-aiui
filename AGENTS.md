@@ -1,9 +1,9 @@
 # Agent Manifest
 
 ## Identity
-- **Name**: Muse 眼镜 Demo
+- **Name**: Muse
 - **Version**: 0.1.0
-- **Description**: Muse 眼镜语音交互与连接验证。
+- **Description**: Muse is your personal AI agent, continuously helping you complete real-world tasks across phones, desktops, and connected devices.
 - **Author**: Rokid
 
 ## Capabilities

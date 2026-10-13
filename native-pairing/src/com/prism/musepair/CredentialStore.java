@@ -9,9 +9,10 @@ import java.security.*;
 import javax.crypto.*;
 import javax.crypto.spec.*;
 
-final class CredentialStore implements MuseCloud.Store {
+final class CredentialStore {
  final Context context;final AtomicFile file;
- CredentialStore(Context c){context=c;file=new AtomicFile(new File(c.getFilesDir(),"muse-pairing.enc"));}
+ CredentialStore(Context c){this(c,"muse-pairing.enc");}
+ CredentialStore(Context c,String name){context=c;file=new AtomicFile(new File(c.getFilesDir(),name));}
  SecretKey key()throws Exception{KeyStore ks=KeyStore.getInstance("AndroidKeyStore");ks.load(null);String alias="muse-pairing-v1";if(ks.containsAlias(alias))return (SecretKey)ks.getKey(alias,null);KeyGenerator gen=KeyGenerator.getInstance("AES","AndroidKeyStore");gen.init(new KeyGenParameterSpec.Builder(alias,KeyProperties.PURPOSE_ENCRYPT|KeyProperties.PURPOSE_DECRYPT).setBlockModes(KeyProperties.BLOCK_MODE_GCM).setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE).build());return gen.generateKey();}
  static byte[] read(InputStream in)throws IOException{ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] b=new byte[2048];int n;while((n=in.read(b))!=-1){out.write(b,0,n);if(out.size()>65536)throw new IOException("credential record too large");}return out.toByteArray();}
  synchronized void importPending()throws Exception{File source=new File(context.getFilesDir(),"pairing-import.json");if(!source.exists())return;JSONObject record;try(InputStream in=new FileInputStream(source)){record=new JSONObject(new String(read(in),"UTF-8"));}if(record.optString("access_token").isEmpty()||record.optString("refresh_token").isEmpty())throw new IOException("invalid pairing import");save(record);if(!source.delete())throw new IOException("failed to erase plaintext import");}

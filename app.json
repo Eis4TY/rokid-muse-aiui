@@ -1,7 +1,7 @@
 {
   "agentId": "develop.rokid.agent.b8978d4a-0fde-49b9-a58f-5e6262506798",
-  "agentName": "Muse 眼镜 Demo",
-  "agentDesc": "Muse 眼镜语音交互与设备连接验证",
+  "agentName": "Muse",
+  "agentDesc": "Muse is your personal AI agent, continuously helping you complete real-world tasks across phones, desktops, and connected devices.",
   "nativeVersion": "1.0.0",
   "inkVersion": ">=0.17.0",
   "permissions": [

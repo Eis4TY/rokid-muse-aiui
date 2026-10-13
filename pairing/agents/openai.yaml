@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rokid 眼镜连接 Muse"
+  short_description: "通过 USB 一键安装眼镜配对组件与 AIUI，完成手机配对及自动授权交接"
+  default_prompt: "使用 $rokid-muse-pairing 帮我将连接电脑的 Rokid 眼镜配对到 Muse，并验证授权自动保存到 AIUI。"

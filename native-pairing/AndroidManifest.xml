@@ -8,7 +8,7 @@
  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
  <uses-permission android:name="android.permission.WAKE_LOCK"/>
  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
- <application android:debuggable="true" android:label="Muse 眼镜服务" android:theme="@android:style/Theme.Material.NoActionBar" android:usesCleartextTraffic="true" android:allowBackup="false">
+ <application android:debuggable="true" android:label="Muse 配对组件" android:theme="@android:style/Theme.Material.NoActionBar" android:usesCleartextTraffic="true" android:allowBackup="false">
   <activity android:name=".PairActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity>
   <service android:name=".MuseService" android:exported="false"/>
   <receiver android:name=".BootReceiver" android:exported="true"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/></intent-filter></receiver>

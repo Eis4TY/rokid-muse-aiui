@@ -1,1 +1,1 @@
-export default { onLaunch(){console.log('[MuseDemo] app.launch');},globalData:{} };
+export default { onLaunch(){console.log('[Muse] app.launch');},globalData:{} };
