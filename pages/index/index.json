@@ -1,13 +1,3 @@
 {
-  "description": "Displays Muse conversations, an animated pixel avatar, and connection status. Record and send voice messages, and scroll through replies using the touchpad.",
-  "schema": {
-    "data": {
-      "type": "object",
-      "properties": {
-        "draft": {
-          "type": "string"
-        }
-      }
-    }
-  }
+  "navigationBarTitleText": "Muse"
 }

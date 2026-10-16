@@ -11,9 +11,6 @@
     "pages/index/index"
   ],
   "window": {
-    "navigationBarTitleText": "Muse",
-    "viewport": {
-      "width": "device-width"
-    }
+    "navigationBarTitleText": "Muse"
   }
 }
