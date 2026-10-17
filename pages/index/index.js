@@ -100,7 +100,7 @@ export default {
   refreshActions(){
     let actions;
     if(this.data.listening)actions=[{id:'stopVoice',label:mt('stopSpeaking')},{id:'cancelVoice',label:mt('cancel')}];
-    else if(this.data.recognizing||this.data.sending||this.data.awaitingReply)actions=[{id:'waiting',label:this.data.recognizing?mt('processing'):this.data.sending?mt('sending'):this.data.replyStreaming?mt('replying'):mt('waiting')}];
+    else if(this.data.recognizing||this.data.sending||this.data.awaitingReply)actions=[];
     else if(this.data.draft||this.data.voiceNoteLabel)actions=[{id:'send',label:mt('send')},{id:'voice',label:mt('retryInput')},{id:'clear',label:mt('undo')}];
     else actions=[];
     this.setData({actions,focus:Math.max(0,Math.min(this.data.focus,actions.length-1))});
