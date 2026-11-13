@@ -256,20 +256,23 @@ test('home loads history in the background and keeps live messages and the call 
   assert.equal(page.data.callState,'live');
 });
 
-test('scrolling up from the latest anchor reaches earlier history and loads the next window',async()=>{
-  const history=[{id:'old',text:'Older',role:'assistant'},{id:'new',text:'Latest',role:'assistant'}];
+test('scrolling from the latest view traverses long messages and loads older history',async()=>{
+  const history=[{id:'old',text:'Older',role:'assistant'},{id:'new',text:'Long answer '.repeat(100),role:'assistant'}];
   const {page}=pageHarness(async(_,options)=>options.cursor===8
     ?{messages:history,cursor:16}
     :{messages:[{id:'earliest',text:'Earliest',role:'user'},...history],cursor:null});
   await page.loadHistory();
+  assert.equal(page.data.latestPreview,true);
   assert.equal(page.data.scrollIntoView,'timeline-end');
   page.scrollMessages(-100);
-  assert.equal(page.data.scrollIntoView,'new');
+  assert.equal(page.data.latestPreview,false);
+  assert.equal(page.data.scrollIntoView,'');
+  const firstOffset=page.data.scrollTop;
+  assert.ok(firstOffset>100);
   page.scrollMessages(-100);
-  assert.equal(page.data.scrollIntoView,'old');
+  assert.equal(page.data.scrollTop,firstOffset-100);
+  while(page.data.scrollTop>0)page.scrollMessages(-100);
   page.scrollMessages(-100);
   await new Promise(resolve=>setImmediate(resolve));
-  assert.equal(page.data.scrollIntoView,'old');
-  page.scrollMessages(-100);
-  assert.equal(page.data.scrollIntoView,'earliest');
+  assert.equal(page.data.timeline[0].id,'earliest');
 });

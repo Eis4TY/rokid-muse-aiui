@@ -26,13 +26,13 @@ final class VoiceCrypto {
   try {
    Noise noise = new Noise();
    write(out, 1, noise.message1());
-   byte[] input = read(in);
+   byte[] input = read(in, out);
    if (input == null || input[0] != 1) return;
    noise.message2(Arrays.copyOfRange(input, 1, input.length));
    byte[] handshake = noise.message3();
    ciphers = noise.split();
    write(out, 1, handshake);
-   while ((input = read(in)) != null) {
+   while ((input = read(in, out)) != null) {
     int operation = input[0];
     if (operation != 2 && operation != 3) throw new IOException("Invalid voice crypto operation");
     byte[] result = ciphers[operation - 2].apply(operation == 2, Noise.EMPTY,
@@ -44,26 +44,46 @@ final class VoiceCrypto {
   }
  }
 
- private static byte[] read(InputStream stream) throws IOException {
+ private static byte[] read(InputStream stream, OutputStream out) throws IOException {
   DataInputStream in = new DataInputStream(stream);
-  int opcode = in.readUnsignedByte();
-  int header = in.readUnsignedByte();
-  if ((header & 128) == 0) throw new IOException("Unmasked WebSocket frame");
-  int length = header & 127;
-  if (length == 126) length = in.readUnsignedShort();
-  else if (length == 127) {
-   long extended = in.readLong();
-   if (extended < 0 || extended > MAX_FRAME) throw new IOException("Invalid WebSocket length");
-   length = (int) extended;
+  ByteArrayOutputStream message = new ByteArrayOutputStream();
+  boolean continuing = false;
+  while (true) {
+   int flags = in.readUnsignedByte();
+   int opcode = flags & 15;
+   boolean last = (flags & 128) != 0;
+   int header = in.readUnsignedByte();
+   if ((flags & 112) != 0 || (header & 128) == 0) throw new IOException("Invalid WebSocket flags");
+   int lengthCode = header & 127;
+   long length = lengthCode;
+   if (lengthCode == 126) length = in.readUnsignedShort();
+   else if (lengthCode == 127) length = in.readLong();
+   if (length < 0 || length > MAX_FRAME) throw new IOException("Invalid WebSocket length");
+   boolean control = opcode >= 8;
+   if (control && (!last || lengthCode > 125)) throw new IOException("Invalid WebSocket control frame");
+   byte[] mask = new byte[4];
+   in.readFully(mask);
+   byte[] frame = new byte[(int) length];
+   in.readFully(frame);
+   for (int i = 0; i < frame.length; i++) frame[i] ^= mask[i & 3];
+   if (opcode == 8 || opcode == 9) {
+    out.write(opcode == 8 ? 0x88 : 0x8a);
+    out.write(frame.length);
+    out.write(frame);
+    out.flush();
+    if (opcode == 8) return null;
+    continue;
+   }
+   if (opcode == 10) continue;
+   if (opcode != (continuing ? 0 : 2) || message.size() + length > MAX_FRAME)
+    throw new IOException("Invalid WebSocket message");
+   message.write(frame);
+   if (last) {
+    if (message.size() == 0) throw new IOException("Empty voice crypto message");
+    return message.toByteArray();
+   }
+   continuing = true;
   }
-  byte[] mask = new byte[4];
-  in.readFully(mask);
-  byte[] frame = new byte[length];
-  in.readFully(frame);
-  for (int i = 0; i < length; i++) frame[i] ^= mask[i & 3];
-  if (opcode == 0x88 && length <= 125) return null;
-  if (opcode != 0x82 || length < 1) throw new IOException("Invalid WebSocket frame");
-  return frame;
  }
 
  private static void write(OutputStream stream, int operation, byte[] bytes) throws IOException {

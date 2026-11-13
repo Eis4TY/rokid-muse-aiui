@@ -138,8 +138,12 @@ export default {
     try{
       const page=await requestBridge('/history',{cursor});
       if(this._historyRequest!==current)return;
-      if(older&&typeof cursor==='string'){
-        const rows=new Map([...page.messages,...this._history].map(row=>[row.id,row]));
+      if(older){
+        const first=this._history[0]?.id;
+        const overlap=page.messages.findIndex(row=>row.id===first);
+        const prefix=overlap>=0?overlap:typeof cursor==='string'?page.messages.length:0;
+        const rows=new Map([...page.messages.slice(0,prefix),...this._history,...page.messages.slice(prefix)]
+          .map(row=>[row.id,row]));
         this._history=[...rows.values()];
       }else this._history=page.messages;
       this._historyCursor=page.cursor===cursor?null:page.cursor;
@@ -212,26 +216,20 @@ export default {
     const rows=this.data.timeline.concat(this.data.draft?[{role:'user',text:this.data.draft}]:[]);
     // Allow space for Markdown block margins and larger headings. The native
     // scroll-view clamps the actual offset to its rendered content height.
-    const content=rows.reduce((height,row)=>height+String(row.text||'').split('\n').reduce((lines,line)=>lines+Math.max(1,Math.ceil(line.length/26)),0)*(row.role==='assistant'?44:27)+(row.role==='assistant'?24:0),0)+(this.data.voiceNoteLabel?54:0);
-    const limit=Math.max(0,content-(this.data.avatarExpanded?96:288));
+    const offsets=new Map();
+    let content=0;
+    for(const row of rows){
+      offsets.set(row.id,content);
+      const lines=String(row.text||'').split('\n').reduce((sum,line)=>sum+Math.max(1,Math.ceil(line.length/26)),0);
+      content+=lines*(row.role==='assistant'?44:27)+(row.role==='assistant'?24:0);
+    }
+    const limit=Math.max(0,content+(this.data.voiceNoteLabel?54:0)-(this.data.avatarExpanded?96:288));
+    if(this.data.latestPreview&&step>0)return;
     this._historyScrollMoved=true;
-    if(this.data.latestPreview){
-      if(step>0)return;
-      this.setData({latestPreview:false});
-    }
     const anchor=this.data.scrollIntoView;
-    if(anchor&&rows.length){
-      const index=anchor==='timeline-end'?rows.length:rows.findIndex(row=>row.id===anchor);
-      if(index>=0){
-        const next=index+Math.sign(step);
-        if(next<0){void this.loadHistory(true);return;}
-        this.setData({scrollIntoView:next>=rows.length?'timeline-end':rows[next].id});
-        return;
-      }
-    }
-    const offset=this.data.scrollTop;
+    const offset=anchor==='timeline-end'?limit:Math.min(limit,offsets.get(anchor)??this.data.scrollTop);
     if(step<0&&offset===0)void this.loadHistory(true);
-    this.setData({scrollIntoView:'',scrollTop:Math.max(0,Math.min(limit,offset+step))});
+    this.setData({latestPreview:false,scrollIntoView:'',scrollTop:Math.max(0,Math.min(limit,offset+step))});
   },
   onKeyDown(event){
     if(event.code!=='Enter'||this._pressAt)return;

@@ -37,9 +37,9 @@ Tap the touchpad while idle to open the menu.
 
 The home screen loads recent messages from the active Muse chat when it connects. The default chat may include messages sent from your phone.
 
-- **Voice call** starts a live conversation. Speak when **Voice live** appears. The microphone is muted during playback. Choose **Interrupt** to stop playback and speak again, or **End** to hang up. Muse allows one active call per instance, so starting a call on the glasses can replace a phone call on that instance.
+- **Voice call (Experimental)** starts a live conversation. Speak when **Voice live** appears. The microphone is muted during playback. Choose **Interrupt** to stop playback and speak again, or **End** to hang up. Muse allows one active call per instance, so starting a call on the glasses can replace a phone call on that instance.
 
-History and realtime voice both require server authorization for the paired device.
+Realtime calls on glasses may time out before Muse replies. History and realtime voice both require server authorization for the paired device.
 
 ## FAQ
 
