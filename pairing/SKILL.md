@@ -36,4 +36,4 @@ description: 通过 USB 为 Rokid 眼镜安装 Muse 像素头像 AIUI 和原生 
 
 默认 main：/chat/subscribe 正文 {}、hatch-web，发送不指定 session_id，手机与眼镜共享账号主会话。回复优先关联父消息 ID；无父 ID 仅在本次用户回显、ACK 会话一致、非 thread、90 秒窗口内接收。不得放开过滤接收账号所有文本，不按全局 seq 丢弃不同事件流。
 
-广播失败、授权错误、超时或无回复，读 [故障排查](references/故障排查.md)，用 `remote_test.py collect` / `watch` 收集脱敏 ZIP。不得打包完整 logcat、令牌或录音。当前已验证的范围与最新结果见 [版本说明](版本说明.md)，不要把旧版实测等同本次所有型号验收。
+广播失败、授权错误、超时或无回复，读 [故障排查](references/故障排查.md)。记录脱敏的错误阶段和设备型号，避免分享令牌、聊天正文或录音。

@@ -1,24 +1,31 @@
 <view class="app">
   <view class="thinking-stage {{avatarExpanded ? 'thinking-expanded' : ''}}"></view>
   <view class="body {{avatarExpanded ? 'body-thinking' : ''}}">
-    <scroll-view class="conversation {{avatarExpanded ? 'conversation-thinking' : ''}}" scroll-y="{{true}}" scroll-top="{{scrollTop}}" scroll-into-view="{{scrollIntoView}}">
-      <view ink:if="{{authorizationHint}}" class="reply"><text class="draft-text">{{authorizationHint}}</text></view>
-      <view ink:for="{{conversation}}" ink:key="id" id="{{item.id}}" class="reply {{item.role === 'user' ? 'user-reply' : 'assistant-reply'}}">
+    <view ink:if="{{latestPreview && !avatarExpanded && !draft && !voiceNoteLabel}}" class="latest-preview">
+      <view ink:for="{{latestRows}}" ink:key="id" class="reply {{item.role === 'user' ? 'user-reply' : 'assistant-reply'}}">
         <text ink:if="{{item.role === 'user'}}" class="draft-text">{{item.text}}</text>
         <streamdown ink:else class="markdown-reply" content="{{item.text}}" streaming="{{!item.done}}" color="#ffffff" font-size="{{18}}"></streamdown>
       </view>
-      <view ink:if="{{voiceNoteLabel && !sending && !awaitingReply}}" class="draft user-reply"><text class="draft-text">{{voiceNoteLabel}}</text></view>
-      <view ink:if="{{draft && !sending && !awaitingReply}}" class="draft user-reply"><text class="draft-label">{{draftLabel}}</text><text class="draft-text">{{draft}}</text></view>
+    </view>
+    <scroll-view ink:else class="conversation {{avatarExpanded ? 'conversation-thinking' : ''}}" scroll-y="{{true}}" scroll-top="{{scrollTop}}" scroll-into-view="{{scrollIntoView}}">
+      <view ink:if="{{authorizationHint}}" class="reply"><text class="draft-text">{{authorizationHint}}</text></view>
+      <view ink:for="{{timeline}}" ink:key="id" id="{{item.id}}" class="reply {{item.role === 'user' ? 'user-reply' : 'assistant-reply'}}">
+        <text ink:if="{{item.role === 'user'}}" class="draft-text">{{item.text}}</text>
+        <streamdown ink:else class="markdown-reply" content="{{item.text}}" streaming="{{!item.done}}" color="#ffffff" font-size="{{18}}"></streamdown>
+      </view>
+      <view ink:if="{{surface === 'chat' && voiceNoteLabel && !sending && !awaitingReply}}" class="draft user-reply"><text class="draft-text">{{voiceNoteLabel}}</text></view>
+      <view ink:if="{{surface === 'chat' && draft && !sending && !awaitingReply}}" class="draft user-reply"><text class="draft-label">{{draftLabel}}</text><text class="draft-text">{{draft}}</text></view>
+      <view id="timeline-end" style="height:1px"></view>
     </scroll-view>
   </view>
   <view class="status-bar">
     <view class="avatar-info">
       <image class="connection-icon" src="/assets/icons/{{connectionState === 'online' ? 'cloud' : connectionState === 'connecting' ? 'loader' : 'cloud-off'}}.svg" style="transform:rotate({{connectionState === 'connecting' ? loaderAngle : 0}}deg);"></image>
-      <text class="brand">Muse · {{avatarLabel}}</text>
+      <text class="brand">Muse · {{callState === 'live' ? callLiveLabel : callState === 'connecting' ? callConnectingLabel : avatarLabel}}</text>
     </view>
     <view class="avatar-slot"></view>
     <view class="actions">
-      <text ink:if="{{!actions.length && !recognizing && !sending && !awaitingReply}}" class="voice-hint">{{voiceHint}}</text>
+      <text ink:if="{{surface === 'chat' && !actions.length && !recognizing && !sending && !awaitingReply}}" class="voice-hint">{{voiceHint}}</text>
       <button ink:for="{{actions}}" ink:key="id" class="action {{focus === index ? 'focused' : ''}}" data-action="{{item.id}}" bindtap="handleAction">{{item.label}}</button>
     </view>
   </view>

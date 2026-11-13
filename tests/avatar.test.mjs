@@ -64,11 +64,11 @@ test('PCM volume handles silence, signed samples and odd/truncated frames',()=>{
   assert.equal(pcmLevel(new ArrayBuffer(1)),0);
 });
 
-function pageHarness(requestBridge){
+function pageHarness(requestBridge, startMuseVoice){
   let source=readFileSync(new URL('../pages/index/index.js',import.meta.url),'utf8');
   source=source.replace(/^import .*;\n/gm,'').replace('export default {','globalThis.definition={');
   const timers=new Map();let next=0;
-  const sandbox={mt,avatarState,newTurnReplies,createPixelAvatar,requestBridge,
+  const sandbox={mt,avatarState,newTurnReplies,createPixelAvatar,requestBridge,startMuseVoice,
     stopMuse(){},LONG_PRESS_MENU_MS:700,wx:{},navigator:{},console:{log(){}},Date,Map,SpeechRecognitionSession:undefined,
     setTimeout(fn){const id=++next;timers.set(id,fn);return id;},clearTimeout(id){timers.delete(id);}};
   vm.runInNewContext(source,sandbox);
@@ -105,7 +105,7 @@ test('hiding the page cancels drawing and polling timers',()=>{
 
 test('direction keys scroll chat instead of selecting toolbar actions and stop at bounds',()=>{
   const {page}=pageHarness(async()=>({}));
-  page.data.conversation=[{id:'long',role:'assistant',text:'长回复'.repeat(200),done:true}];
+  page.setConversation([{id:'long',role:'assistant',text:'长回复'.repeat(200),done:true}]);
   page.refreshActions();let prevented=0;
   const key=code=>page.onKeyUp({code,preventDefault(){prevented++;}});
   key('ArrowDown');assert.equal(page.data.scrollTop,100);assert.equal(page.data.focus,0);
@@ -217,4 +217,59 @@ test('cancel, discard and recording failure restore small avatar',()=>{
     else{page._recognition.onrecorded({duration:1,pcm_base64:'AAAA'});page._recognition.onend();if(action==='back')page.goBack();else page.runAction('clear');}
     assert.equal(page.data.avatarExpanded,false,action);
   }
+});
+
+test('home loads history in the background and keeps live messages and the call menu available',async()=>{
+  let resolveHistory, requests=0, callCallbacks, recordingStarts=0;
+  const {page}=pageHarness(async(path, options)=>{
+    if(path==='/health')return {message_channel:'connected',muse:'paired'};
+    assert.equal(path,'/history');
+    assert.equal(options.cursor,8);
+    requests++;
+    return new Promise(resolve=>{resolveHistory=resolve;});
+  }, callbacks=>{callCallbacks=callbacks;return {};});
+  page._recognition={start(){recordingStarts++;},abort(){}};
+  await page.checkConnection();
+  await page.checkConnection();
+  assert.equal(requests,1);
+  page.startVoice();
+  assert.equal(recordingStarts,1);
+  assert.equal(page.data.recognizing,true);
+  page.cancelVoice();
+  page.openMenu();
+  assert.deepEqual(Array.from(page.data.actions,action=>action.id),['call']);
+  page.activate();
+  assert.equal(page.data.callState,'connecting');
+  callCallbacks.onReady();
+  assert.equal(page.data.callState,'live');
+  assert.equal(recordingStarts,2);
+  page.updateReplies([{id:'live',text:'Live',done:true}]);
+  const pending=page._historyRequest;
+  assert.ok(pending);
+  resolveHistory({messages:[
+    {id:'old',role:'user',text:'Earlier',done:true},
+    {id:'live',role:'assistant',text:'Stale copy',done:true}
+  ]});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.deepEqual(Array.from(page.data.timeline,row=>row.text),['Earlier','Live']);
+  assert.equal(page.data.conversation.length,1);
+  assert.equal(page.data.callState,'live');
+});
+
+test('scrolling up from the latest anchor reaches earlier history and loads the next window',async()=>{
+  const history=[{id:'old',text:'Older',role:'assistant'},{id:'new',text:'Latest',role:'assistant'}];
+  const {page}=pageHarness(async(_,options)=>options.cursor===8
+    ?{messages:history,cursor:16}
+    :{messages:[{id:'earliest',text:'Earliest',role:'user'},...history],cursor:null});
+  await page.loadHistory();
+  assert.equal(page.data.scrollIntoView,'timeline-end');
+  page.scrollMessages(-100);
+  assert.equal(page.data.scrollIntoView,'new');
+  page.scrollMessages(-100);
+  assert.equal(page.data.scrollIntoView,'old');
+  page.scrollMessages(-100);
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(page.data.scrollIntoView,'old');
+  page.scrollMessages(-100);
+  assert.equal(page.data.scrollIntoView,'earliest');
 });

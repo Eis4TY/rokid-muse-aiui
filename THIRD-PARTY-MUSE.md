@@ -1,4 +1,4 @@
-Noise XX 和协议封装改写自 Meta Muse Gadget SDK（Apache-2.0）：https://github.com/facebookincubator/muse-gadget-sdk 。协议实现文件为 lib/muse-noise.js、lib/muse-wire.js。
+Noise XX 和协议封装改写自 Meta Muse Gadget SDK（Apache-2.0）：https://github.com/facebookincubator/muse-gadget-sdk 。协议实现文件为 lib/muse-noise.js、lib/muse-wire.js。lib/muse-voice-call.js 的实时语音协议和回复归属处理参考了 Muse Gadget SDK 的 linux/src/musegadget/voice_call.py 和 voice_gate.py（b11908c，Apache-2.0）。
 加密算法使用 @noble/curves 1.4.2、@noble/ciphers 0.5.3、@noble/hashes 1.4.0（MIT），以纯 JavaScript ES module 打包进 lib/muse-crypto.js，无 Node.js 运行时依赖。许可证随 AIX 放在 legal/。
 
 

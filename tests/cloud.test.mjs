@@ -119,3 +119,15 @@ test('streamed Markdown preserves paragraph breaks, lists and code indentation',
  r.feed({type:'event',event:'delta.message_done',payload:{session_id:SESSION,message_id:'markdown',text:markdown}});
  assert.equal(r.snapshot()[0].text,markdown);assert.equal(r.snapshot()[0].done,true);
 });
+
+test('streamed widget references render as a readable placeholder',()=>{
+ const replies=new Replies();
+ const payload={session_id:SESSION,message_id:'widget'};
+ const append=text=>replies.feed({type:'event',event:'delta.text_append',payload:{...payload,text}});
+ append('**Answer**\n\n[');
+ assert.equal(replies.snapshot()[0].text,'**Answer**\n\n');
+ append('[hatch_widget:widget-bc8ebfc0-');
+ assert.equal(replies.snapshot()[0].text,'**Answer**\n\n');
+ append('22ce-458b-b316-183dd0ad1f8a]]\n\nMore');
+ assert.equal(replies.snapshot()[0].text,'**Answer**\n\nMuse card unavailable on glasses\n\nMore');
+});
