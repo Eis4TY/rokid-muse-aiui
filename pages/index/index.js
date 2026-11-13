@@ -10,7 +10,7 @@ import {mt} from '../../lib/muse-i18n.js';
 function cancelTimer(id) { if(id !== undefined && id !== null) clearTimeout(id); }
 function trace(event, data={}) {console.log('[Muse]',JSON.stringify({event,...data}));}
 export default {
-  data:{callConnectingLabel:mt('callConnecting'),callLiveLabel:mt('callLive'),surface:'chat',timeline:[],callState:'',title:'Muse',status:'',authorizationHint:'',connectionState:'connecting',loaderAngle:0,bridgeOnline:false,museReady:false,channelReady:false,focus:0,actions:[],messages:[],conversation:[],awaitingReply:false,replyStreaming:false,avatarExpanded:false,avatarLabel:'',lastQuestion:'',draft:'',voiceNoteLabel:'',listening:false,recognizing:false,sending:false,toast:'',scrollTop:0,scrollIntoView:'',latestPreview:false,latestRows:[]},
+  data:{callConnectingLabel:mt('callConnecting'),callLiveLabel:mt('callLive'),surface:'chat',timeline:[],callState:'',title:'Muse',status:'',authorizationHint:'',connectionState:'connecting',loaderAngle:0,bridgeOnline:false,museReady:false,channelReady:false,focus:0,actions:[],messages:[],conversation:[],awaitingReply:false,replyStreaming:false,avatarExpanded:false,avatarLabel:'',lastQuestion:'',draft:'',voiceNoteLabel:'',listening:false,recognizing:false,sending:false,toast:'',scrollTop:0,scrollIntoView:'',historyFromBottom:false,latestRows:[]},
   onLoad(params={}) {
     this._active=true;this._avatarStartedAt=Date.now();this._avatarMode='boot';this._avatarModeAt=this._avatarStartedAt;this._avatar=createPixelAvatar();this._audioLevel=0;this._replyBaseline=new Map();this._generation=0;this._counter=0;
     this._recognition=createVoiceInput({wx});
@@ -24,7 +24,7 @@ export default {
   onShow(){this._active=true;resumeMuse();if(this._pollPaused){this._pollPaused=false;this.pollBridge();}if(this._avatarReady)this.startAvatar();},
   onHide(){this._active=false;this.cleanup();},
   onUnload(){this._active=false;this.cleanup();},
-  cleanup(){this._historyRequest=null;this._historyLoaded=false;this._historyCursor=null;this._historyRetryAt=0;this._historyScrollMoved=false;this._call?.end();this._menu=false;stopMuse();this._pollPaused=true;cancelTimer(this._avatarTimer);this._avatarTimer=null;cancelTimer(this._pollTimer);cancelTimer(this._pressTimer);cancelTimer(this._tapTimer);cancelTimer(this._scanTimer);cancelTimer(this._toastTimer);this._generation++;if(this._scan)this._scan.stop();this._scan=null;this._scanning=false;this._pressAt=0;this._tapTimer=null;if(this._recognition)this._recognition.abort();this._voiceNote=null;this.setData({listening:false,recognizing:false,voiceNoteLabel:'',avatarExpanded:false,surface:'chat',callState:'',latestPreview:false,scrollIntoView:'',scrollTop:0});if(this._gatt)this._gatt.disconnect().catch(()=>{});},
+  cleanup(){this._historyRequest=null;this._historyLoaded=false;this._historyCursor=null;this._historyRetryAt=0;this._historyScrollMoved=false;this._call?.end();this._menu=false;stopMuse();this._pollPaused=true;cancelTimer(this._avatarTimer);this._avatarTimer=null;cancelTimer(this._pollTimer);cancelTimer(this._pressTimer);cancelTimer(this._tapTimer);cancelTimer(this._scanTimer);cancelTimer(this._toastTimer);this._generation++;if(this._scan)this._scan.stop();this._scan=null;this._scanning=false;this._pressAt=0;this._tapTimer=null;if(this._recognition)this._recognition.abort();this._voiceNote=null;this.setData({listening:false,recognizing:false,voiceNoteLabel:'',avatarExpanded:false,surface:'chat',callState:'',historyFromBottom:false,scrollIntoView:'',scrollTop:0});if(this._gatt)this._gatt.disconnect().catch(()=>{});},
   startAvatar(){
     cancelTimer(this._avatarTimer);
     if(!this._active||!this._avatarReady||this.data.callState)return;
@@ -74,14 +74,14 @@ export default {
       awaitingReply:this.data.awaitingReply&&!(latest&&latest.done),
       replyStreaming:!!(latest&&!latest.done),
       avatarExpanded:this.data.avatarExpanded&&!latest,
-      ...(this.data.surface==='chat'&&this.data.avatarExpanded&&latest?{latestPreview:false,scrollIntoView:latest.id,scrollTop:0}:{})});
+      ...(this.data.surface==='chat'&&this.data.avatarExpanded&&latest?{historyFromBottom:false,scrollIntoView:latest.id,scrollTop:0}:{})});
   },
   setConversation(conversation, patch={}){
-    if(patch.scrollIntoView&&patch.scrollIntoView!=='timeline-end')patch={latestPreview:false,...patch};
+    if(patch.scrollIntoView&&patch.scrollIntoView!=='timeline-end')patch={historyFromBottom:false,...patch};
     const liveIds=new Set(conversation.map(row=>row.id));
     const history=(this._history||[]).filter(row=>!liveIds.has(row.id));
     const timeline=[...history,...conversation];
-    this.setData({...patch,conversation,timeline,latestRows:timeline.slice(-8)});
+    this.setData({...patch,conversation,timeline,latestRows:timeline.slice().reverse()});
   },
   toast(text){if(!this._active)return;this.setData({toast:text});cancelTimer(this._toastTimer);this._toastTimer=setTimeout(()=>{if(this._active)this.setData({toast:''});},4500);},
   async checkConnection(){
@@ -149,7 +149,7 @@ export default {
       this._historyCursor=page.cursor===cursor?null:page.cursor;
       this._historyLoaded=true;
       const followLatest=!older&&page.messages.length&&!this._historyScrollMoved&&!this.data.scrollIntoView;
-      this.setConversation(this.data.conversation,followLatest?{latestPreview:true,scrollIntoView:'timeline-end'}:{});
+      this.setConversation(this.data.conversation,followLatest?{historyFromBottom:true,scrollIntoView:'',scrollTop:0}:{});
       trace('history.loaded',{count:page.messages.length});
     }catch(error){
       if(this._historyRequest!==current)return;
@@ -211,6 +211,15 @@ export default {
     return false;
   },
   scrollMessages(step){
+    if(this.data.historyFromBottom&&!this.data.avatarExpanded&&!this.data.draft&&!this.data.voiceNoteLabel){
+      const offset=this.data.scrollTop;
+      if(step<0){
+        this._historyScrollMoved=true;
+        void this.loadHistory(true);
+      }
+      this.setData({scrollTop:Math.max(0,Math.min(this.data.latestRows.length*12000,offset-step))});
+      return;
+    }
     // scroll-view exposes no scroll callback; bound the requested offset using
     // wrapped line counts so repeated down presses cannot accumulate indefinitely.
     const rows=this.data.timeline.concat(this.data.draft?[{role:'user',text:this.data.draft}]:[]);
@@ -224,12 +233,11 @@ export default {
       content+=lines*(row.role==='assistant'?44:27)+(row.role==='assistant'?24:0);
     }
     const limit=Math.max(0,content+(this.data.voiceNoteLabel?54:0)-(this.data.avatarExpanded?96:288));
-    if(this.data.latestPreview&&step>0)return;
     this._historyScrollMoved=true;
     const anchor=this.data.scrollIntoView;
     const offset=anchor==='timeline-end'?limit:Math.min(limit,offsets.get(anchor)??this.data.scrollTop);
     if(step<0&&offset===0)void this.loadHistory(true);
-    this.setData({latestPreview:false,scrollIntoView:'',scrollTop:Math.max(0,Math.min(limit,offset+step))});
+    this.setData({historyFromBottom:false,scrollIntoView:'',scrollTop:Math.max(0,Math.min(limit,offset+step))});
   },
   onKeyDown(event){
     if(event.code!=='Enter'||this._pressAt)return;

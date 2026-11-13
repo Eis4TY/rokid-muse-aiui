@@ -262,17 +262,15 @@ test('scrolling from the latest view traverses long messages and loads older his
     ?{messages:history,cursor:16}
     :{messages:[{id:'earliest',text:'Earliest',role:'user'},...history],cursor:null});
   await page.loadHistory();
-  assert.equal(page.data.latestPreview,true);
-  assert.equal(page.data.scrollIntoView,'timeline-end');
+  assert.equal(page.data.historyFromBottom,true);
+  assert.equal(page.data.scrollTop,0);
+  assert.equal(page.data.latestRows[0].id,'new');
   page.scrollMessages(-100);
-  assert.equal(page.data.latestPreview,false);
-  assert.equal(page.data.scrollIntoView,'');
-  const firstOffset=page.data.scrollTop;
-  assert.ok(firstOffset>100);
+  assert.equal(page.data.scrollTop,100);
   page.scrollMessages(-100);
-  assert.equal(page.data.scrollTop,firstOffset-100);
-  while(page.data.scrollTop>0)page.scrollMessages(-100);
-  page.scrollMessages(-100);
+  assert.equal(page.data.scrollTop,200);
+  page.scrollMessages(100);
+  assert.equal(page.data.scrollTop,100);
   await new Promise(resolve=>setImmediate(resolve));
   assert.equal(page.data.timeline[0].id,'earliest');
 });

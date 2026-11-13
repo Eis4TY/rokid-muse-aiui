@@ -30,5 +30,5 @@
 
 .markdown-reply {display:block;width:100%;text-align:left;}
 
-.latest-preview {width:480px;height:288px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;}
-.latest-preview .reply {flex-shrink:0;}
+.history-from-bottom {transform:rotate(180deg);}
+.history-from-bottom .reply {transform:rotate(180deg);}
