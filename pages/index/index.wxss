@@ -29,3 +29,6 @@
 .conversation-thinking {height:96px;}
 
 .markdown-reply {display:block;width:100%;text-align:left;}
+
+.history-viewport {width:480px;height:288px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;}
+.history-from-bottom {width:480px;flex-shrink:0;}

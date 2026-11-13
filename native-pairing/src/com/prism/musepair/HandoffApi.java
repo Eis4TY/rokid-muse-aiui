@@ -8,7 +8,7 @@ import java.util.concurrent.*;
 import org.json.*;
 
 final class HandoffApi implements AutoCloseable {
- final CredentialStore store;final byte[] binding;final java.util.Map<String,Long> challenges=new java.util.HashMap<>();final ServerSocket server;final ExecutorService clients=Executors.newFixedThreadPool(2);volatile boolean active=true;String code,id;long expires;int failures;boolean acknowledged;
+ final CredentialStore store;final byte[] binding;final java.util.Map<String,Long> challenges=new java.util.HashMap<>();final ServerSocket server;final ExecutorService clients=Executors.newFixedThreadPool(2);final java.util.concurrent.atomic.AtomicReference<Socket> voiceSocket=new java.util.concurrent.atomic.AtomicReference<>();volatile boolean active=true;String code,id;long expires;int failures;boolean acknowledged;
  HandoffApi(CredentialStore store,byte[] binding)throws Exception{this.store=store;this.binding=binding;JSONObject existing=store.load();if(existing!=null){id=existing.optString("handoff_id");acknowledged=existing.optBoolean("handoff_delivered");}server=new ServerSocket();server.setReuseAddress(true);server.bind(new InetSocketAddress("127.0.0.1",18791),8);}
  synchronized String offer(JSONObject record)throws Exception{code=String.format(java.util.Locale.ROOT,"%06d",new SecureRandom().nextInt(1000000));id=PairProtocol.b64(Noise.key());record.put("handoff_id",id).put("handoff_delivered",false);store.save(record);expires=System.nanoTime()+300000000000L;failures=0;acknowledged=false;return code;}
  synchronized boolean ready(){return code!=null&&!acknowledged&&System.nanoTime()<expires&&failures<5;}
@@ -19,7 +19,17 @@ final class HandoffApi implements AutoCloseable {
  synchronized void authenticate(JSONObject data,String action)throws Exception{if(binding==null)throw new Exception();String nonce=data.getString("nonce");Long expiry=challenges.remove(nonce);if(expiry==null||expiry<System.nanoTime())throw new Exception();String text="muse-aiui-"+action+"-v1|"+(action.equals("complete")?data.getString("handoff_id")+"|":"")+nonce;byte[] expected=Noise.hmac(binding,PairProtocol.bytes(text)),proof=PairProtocol.decode(data.getString("proof"),128);if(!MessageDigest.isEqual(expected,proof))throw new Exception();}
  synchronized JSONObject claimBound(JSONObject data)throws Exception{authenticate(data,"claim");if(!boundReady())throw new Exception();byte[] iv=new byte[12];new SecureRandom().nextBytes(iv);Cipher cipher=Cipher.getInstance("AES/GCM/NoPadding");cipher.init(Cipher.ENCRYPT_MODE,new SecretKeySpec(binding,"AES"),new GCMParameterSpec(128,iv));cipher.updateAAD(PairProtocol.bytes(data.getString("nonce")));byte[] encrypted=cipher.doFinal(PairProtocol.bytes(store.load().toString()));return new JSONObject().put("nonce",data.getString("nonce")).put("iv",PairProtocol.b64(iv)).put("ciphertext",PairProtocol.b64(encrypted));}
  void start(){new Thread(()->{while(active){try{Socket s=server.accept();clients.execute(()->handle(s));}catch(Exception e){if(active)break;}}},"MuseHandoff").start();}
- void handle(Socket socket){try(Socket s=socket){s.setSoTimeout(4000);InputStream in=new BufferedInputStream(s.getInputStream());String[] request=LocalApi.line(in).split(" ");if(request.length!=3)return;int length=0,total=0;while(true){String h=LocalApi.line(in);if(h.isEmpty())break;total+=h.length();if(total>8192)return;String lower=h.toLowerCase(java.util.Locale.ROOT);if(lower.startsWith("transfer-encoding:"))return;if(lower.startsWith("content-length:"))length=Integer.parseInt(h.substring(15).trim());}if(length<0||length>1024)return;byte[] body=new byte[length];int n=0;while(n<length){int r=in.read(body,n,length-n);if(r<0)return;n+=r;}
+ void handle(Socket socket){try(Socket s=socket){s.setSoTimeout(4000);InputStream in=new BufferedInputStream(s.getInputStream());String[] request=LocalApi.line(in).split(" ");if(request.length!=3)return;int length=0,total=0;String wsKey=null,nonce=null,proof=null;while(true){String h=LocalApi.line(in);if(h.isEmpty())break;total+=h.length();if(total>8192)return;String lower=h.toLowerCase(java.util.Locale.ROOT);if(lower.startsWith("transfer-encoding:"))return;if(lower.startsWith("content-length:"))length=Integer.parseInt(h.substring(15).trim());
+   if(lower.startsWith("sec-websocket-key:"))wsKey=h.substring(18).trim();
+   if(lower.startsWith("x-muse-nonce:"))nonce=h.substring(13).trim();
+   if(lower.startsWith("x-muse-proof:"))proof=h.substring(13).trim();}if(length<0||length>1024)return;byte[] body=new byte[length];int n=0;while(n<length){int r=in.read(body,n,length-n);if(r<0)return;n+=r;}
+  if(request[0].equals("GET")&&request[1].equals("/voice-crypto")&&wsKey!=null){
+   try{authenticate(new JSONObject().put("nonce",nonce).put("proof",proof),"voice");}
+   catch(Exception e){LocalApi.reply(s,403,new JSONObject());return;}
+   if(!voiceSocket.compareAndSet(null,s)){LocalApi.reply(s,429,new JSONObject());return;}
+   try{VoiceCrypto.run(s,in,wsKey);}finally{voiceSocket.compareAndSet(s,null);}
+   return;
+  }
   int status=200;JSONObject result;
   if(request[0].equals("OPTIONS")){status=204;result=new JSONObject();}
   else if(request[0].equals("GET")&&request[1].equals("/status")){result=new JSONObject().put("device_id",PairProtocol.NODE).put("ble_name",DeviceIdentity.bleName).put("original_name",DeviceIdentity.originalName).put("native_pairing",true).put("handoff_ready",binding!=null?boundReady():ready()).put("binding_ready",binding!=null).put("delivered",acknowledged);}
@@ -30,5 +40,5 @@ final class HandoffApi implements AutoCloseable {
   else if(request[0].equals("POST")&&request[1].equals("/complete")){boolean ok=binding==null&&ack(new JSONObject(new String(body,"UTF-8")).optString("handoff_id"));status=ok?200:403;result=new JSONObject().put("saved",ok);}
   else{status=404;result=new JSONObject();}LocalApi.reply(s,status,result);
  }catch(Exception ignored){}}
- public void close(){active=false;code=null;try{server.close();}catch(Exception ignored){}clients.shutdownNow();}
+ public void close(){active=false;code=null;try{server.close();}catch(Exception ignored){}Socket voice=voiceSocket.getAndSet(null);if(voice!=null)try{voice.close();}catch(IOException ignored){}clients.shutdownNow();}
 }

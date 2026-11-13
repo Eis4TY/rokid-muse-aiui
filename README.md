@@ -33,6 +33,14 @@ Scan for your device → confirm pairing and device access → select **Use curr
 
 Hold the touchpad to record, tap to stop, then choose **Send**. Muse transcribes the audio and returns a reply. Scroll to read; double-tap to go back. Recordings last 0.3–15 seconds and remain in memory until sent or discarded.
 
+Tap the touchpad while idle to open the menu.
+
+The home screen loads recent messages from the active Muse chat when it connects. The default chat may include messages sent from your phone.
+
+- **Voice call (Experimental)** starts a live conversation. Speak when **Voice live** appears. The microphone is muted during playback. Choose **Interrupt** to stop playback and speak again, or **End** to hang up. Muse allows one active call per instance, so starting a call on the glasses can replace a phone call on that instance.
+
+Realtime calls on glasses may time out before Muse replies. History and realtime voice both require server authorization for the paired device.
+
 ## FAQ
 
 ### Cannot reconnect to the Rokid app after connecting to Muse

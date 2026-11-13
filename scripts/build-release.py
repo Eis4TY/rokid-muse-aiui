@@ -7,6 +7,12 @@ p=argparse.ArgumentParser();p.add_argument('--output',type=Path,default=ROOT.par
 output=args.output.resolve();skill=output/'rokid-muse-pairing'
 if output==ROOT or ROOT in output.parents:raise SystemExit('输出必须位于工程外。')
 if not args.skip_native_build:subprocess.run(['sh',str(ROOT/'native-pairing/build.sh')],check=True)
+# Remove retired files from releases generated before the diagnostic toolkit was removed.
+for name in (
+ 'scripts/remote_test.py', 'scripts/test_remote.py', '开始远程测试.cmd',
+ '开始远程测试.command', '远程测试说明.md', '版本说明.md',
+):
+ (skill/name).unlink(missing_ok=True)
 shutil.copytree(ROOT/'pairing',skill,dirs_exist_ok=True,ignore=shutil.ignore_patterns('__pycache__','*.pyc','results','.DS_Store'))
 source=skill/'assets/source'
 if source.exists():shutil.rmtree(source)
