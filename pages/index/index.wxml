@@ -1,12 +1,14 @@
 <view class="app">
   <view class="thinking-stage {{avatarExpanded ? 'thinking-expanded' : ''}}"></view>
   <view class="body {{avatarExpanded ? 'body-thinking' : ''}}">
-    <scroll-view ink:if="{{historyFromBottom && !avatarExpanded && !draft && !voiceNoteLabel}}" class="conversation history-from-bottom" scroll-y="{{true}}" scroll-top="{{scrollTop}}">
-      <view ink:for="{{latestRows}}" ink:key="id" class="reply {{item.role === 'user' ? 'user-reply' : 'assistant-reply'}}">
+    <view ink:if="{{historyFromBottom && !avatarExpanded && !draft && !voiceNoteLabel}}" class="history-viewport">
+      <view class="history-from-bottom" style="transform:translate(0px,{{scrollTop}}px);">
+      <view ink:for="{{timeline}}" ink:key="id" class="reply {{item.role === 'user' ? 'user-reply' : 'assistant-reply'}}">
         <text ink:if="{{item.role === 'user'}}" class="draft-text">{{item.text}}</text>
         <streamdown ink:else class="markdown-reply" content="{{item.text}}" streaming="{{!item.done}}" color="#ffffff" font-size="{{18}}"></streamdown>
       </view>
-    </scroll-view>
+      </view>
+    </view>
     <scroll-view ink:else class="conversation {{avatarExpanded ? 'conversation-thinking' : ''}}" scroll-y="{{true}}" scroll-top="{{scrollTop}}" scroll-into-view="{{scrollIntoView}}">
       <view ink:if="{{authorizationHint}}" class="reply"><text class="draft-text">{{authorizationHint}}</text></view>
       <view ink:for="{{timeline}}" ink:key="id" id="{{item.id}}" class="reply {{item.role === 'user' ? 'user-reply' : 'assistant-reply'}}">

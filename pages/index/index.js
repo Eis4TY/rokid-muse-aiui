@@ -10,7 +10,7 @@ import {mt} from '../../lib/muse-i18n.js';
 function cancelTimer(id) { if(id !== undefined && id !== null) clearTimeout(id); }
 function trace(event, data={}) {console.log('[Muse]',JSON.stringify({event,...data}));}
 export default {
-  data:{callConnectingLabel:mt('callConnecting'),callLiveLabel:mt('callLive'),surface:'chat',timeline:[],callState:'',title:'Muse',status:'',authorizationHint:'',connectionState:'connecting',loaderAngle:0,bridgeOnline:false,museReady:false,channelReady:false,focus:0,actions:[],messages:[],conversation:[],awaitingReply:false,replyStreaming:false,avatarExpanded:false,avatarLabel:'',lastQuestion:'',draft:'',voiceNoteLabel:'',listening:false,recognizing:false,sending:false,toast:'',scrollTop:0,scrollIntoView:'',historyFromBottom:false,latestRows:[]},
+  data:{callConnectingLabel:mt('callConnecting'),callLiveLabel:mt('callLive'),surface:'chat',timeline:[],callState:'',title:'Muse',status:'',authorizationHint:'',connectionState:'connecting',loaderAngle:0,bridgeOnline:false,museReady:false,channelReady:false,focus:0,actions:[],messages:[],conversation:[],awaitingReply:false,replyStreaming:false,avatarExpanded:false,avatarLabel:'',lastQuestion:'',draft:'',voiceNoteLabel:'',listening:false,recognizing:false,sending:false,toast:'',scrollTop:0,scrollIntoView:'',historyFromBottom:false},
   onLoad(params={}) {
     this._active=true;this._avatarStartedAt=Date.now();this._avatarMode='boot';this._avatarModeAt=this._avatarStartedAt;this._avatar=createPixelAvatar();this._audioLevel=0;this._replyBaseline=new Map();this._generation=0;this._counter=0;
     this._recognition=createVoiceInput({wx});
@@ -81,7 +81,7 @@ export default {
     const liveIds=new Set(conversation.map(row=>row.id));
     const history=(this._history||[]).filter(row=>!liveIds.has(row.id));
     const timeline=[...history,...conversation];
-    this.setData({...patch,conversation,timeline,latestRows:timeline.slice().reverse()});
+    this.setData({...patch,conversation,timeline});
   },
   toast(text){if(!this._active)return;this.setData({toast:text});cancelTimer(this._toastTimer);this._toastTimer=setTimeout(()=>{if(this._active)this.setData({toast:''});},4500);},
   async checkConnection(){
@@ -217,7 +217,7 @@ export default {
         this._historyScrollMoved=true;
         void this.loadHistory(true);
       }
-      this.setData({scrollTop:Math.max(0,Math.min(this.data.latestRows.length*12000,offset-step))});
+      this.setData({scrollTop:Math.max(0,Math.min(this.data.timeline.length*12000,offset-step))});
       return;
     }
     // scroll-view exposes no scroll callback; bound the requested offset using

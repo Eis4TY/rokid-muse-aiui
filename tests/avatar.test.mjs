@@ -264,7 +264,6 @@ test('scrolling from the latest view traverses long messages and loads older his
   await page.loadHistory();
   assert.equal(page.data.historyFromBottom,true);
   assert.equal(page.data.scrollTop,0);
-  assert.equal(page.data.latestRows[0].id,'new');
   page.scrollMessages(-100);
   assert.equal(page.data.scrollTop,100);
   page.scrollMessages(-100);
