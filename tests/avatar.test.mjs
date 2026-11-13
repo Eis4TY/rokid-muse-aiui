@@ -270,6 +270,7 @@ test('scrolling from the latest view traverses long messages and loads older his
   assert.equal(page.data.scrollTop,200);
   page.scrollMessages(100);
   assert.equal(page.data.scrollTop,100);
+  for(let i=0;i<100;i++)page.scrollMessages(-100);
   await new Promise(resolve=>setImmediate(resolve));
   assert.equal(page.data.timeline[0].id,'earliest');
 });

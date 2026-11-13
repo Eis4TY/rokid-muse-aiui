@@ -211,15 +211,6 @@ export default {
     return false;
   },
   scrollMessages(step){
-    if(this.data.historyFromBottom&&!this.data.avatarExpanded&&!this.data.draft&&!this.data.voiceNoteLabel){
-      const offset=this.data.scrollTop;
-      if(step<0){
-        this._historyScrollMoved=true;
-        void this.loadHistory(true);
-      }
-      this.setData({scrollTop:Math.max(0,Math.min(this.data.timeline.length*12000,offset-step))});
-      return;
-    }
     // scroll-view exposes no scroll callback; bound the requested offset using
     // wrapped line counts so repeated down presses cannot accumulate indefinitely.
     const rows=this.data.timeline.concat(this.data.draft?[{role:'user',text:this.data.draft}]:[]);
@@ -234,6 +225,14 @@ export default {
     }
     const limit=Math.max(0,content+(this.data.voiceNoteLabel?54:0)-(this.data.avatarExpanded?96:288));
     this._historyScrollMoved=true;
+    if(this.data.historyFromBottom&&!this.data.avatarExpanded&&!this.data.draft&&!this.data.voiceNoteLabel){
+      const offset=this.data.scrollTop;
+      if(step<0&&offset>=limit){
+        void this.loadHistory(true);
+      }
+      this.setData({scrollTop:Math.max(0,Math.min(limit,offset-step))});
+      return;
+    }
     const anchor=this.data.scrollIntoView;
     const offset=anchor==='timeline-end'?limit:Math.min(limit,offsets.get(anchor)??this.data.scrollTop);
     if(step<0&&offset===0)void this.loadHistory(true);
