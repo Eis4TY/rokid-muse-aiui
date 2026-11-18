@@ -31,6 +31,8 @@ Scan for your device → confirm pairing and device access → select **Use curr
 
 ## Use
 
+After pairing, say **“Hi Rokid, OpenMuse”** to open or reopen Muse. The Muse icon on the glasses is for pairing only. You can leave it in place; tapping it does not open the chat.
+
 Hold the touchpad to record, tap to stop, then choose **Send**. Muse transcribes the audio and returns a reply. Scroll to read; double-tap to go back. Recordings last 0.3–15 seconds and remain in memory until sent or discarded.
 
 Tap the touchpad while idle to open the menu.
