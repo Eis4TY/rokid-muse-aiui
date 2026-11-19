@@ -4,7 +4,7 @@
 
 Use Meta Muse on Rokid glasses with voice input, streaming Markdown replies, and an animated pixel avatar. Built with [Muse Gadget SDK](https://github.com/facebookincubator/muse-gadget-sdk) and Rokid AIUI. This is an independent integration.
 
-Each pair of glasses has its own device identity. The native component handles BLE pairing and securely hands authorization to AIUI. AIUI connects to Muse through the Rokid phone network and manages token refresh. Daily use requires no computer, USB forwarding, or glasses Wi-Fi.
+Each pair of glasses has its own device identity. The native component handles BLE pairing and securely hands authorization to AIUI. AIUI connects to Muse through the Rokid phone network and manages token refresh. Once Muse is open, it does not need a computer, USB forwarding, or glasses Wi-Fi.
 
 ![Muse recording and reply reading on Rokid glasses](media/glasses-experience.jpg)
 
@@ -31,7 +31,9 @@ Scan for your device → confirm pairing and device access → select **Use curr
 
 ## Use
 
-After pairing, say **“Hi Rokid, OpenMuse”** to open or reopen Muse. The Muse icon on the glasses is for pairing only. You can leave it in place; tapping it does not open the chat.
+After pairing, **“Hi Rokid, OpenMuse”** is the intended voice command to open or reopen Muse. The Muse icon on the glasses is for pairing only; tapping it does not open the chat.
+
+> **Known issue with the global Rokid app:** Voice commands currently cannot open or reopen AIUI agents installed via the CLI, including Muse. Until this is fixed, connect the glasses to your computer and run `python3 scripts/setup.py open` from the release folder. See [issue #3](https://github.com/Eis4TY/rokid-muse-aiui/issues/3) for updates.
 
 Hold the touchpad to record, tap to stop, then choose **Send**. Muse transcribes the audio and returns a reply. Scroll to read; double-tap to go back. Recordings last 0.3–15 seconds and remain in memory until sent or discarded.
 
