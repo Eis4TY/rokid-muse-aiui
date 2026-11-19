@@ -4,7 +4,7 @@
 
 在 Rokid 眼镜上使用 Meta Muse，支持语音输入、Markdown 流式回复和动态像素头像。基于 [Muse Gadget SDK](https://github.com/facebookincubator/muse-gadget-sdk) 与 Rokid AIUI 构建，为独立集成项目。
 
-每副眼镜拥有独立设备身份。原生组件负责 BLE 配对与安全授权交接；AIUI 经 Rokid 手机网络连接 Muse，并管理令牌刷新。日常使用无需电脑、USB 转发或眼镜 Wi-Fi。
+每副眼镜拥有独立设备身份。原生组件负责 BLE 配对与安全授权交接；AIUI 经 Rokid 手机网络连接 Muse，并管理令牌刷新。打开 Muse 后，使用过程中无需电脑、USB 转发或眼镜 Wi-Fi。
 
 ![Rokid 眼镜上的 Muse 录音确认与回复阅读](media/glasses-experience.jpg)
 
@@ -31,7 +31,9 @@ python3 scripts/setup.py open
 
 ## 使用
 
-配对完成后，对眼镜说 **「Hi Rokid, OpenMuse」** 即可打开或重新进入 Muse。眼镜上的 Muse 图标仅用于配对，保留即可，不是聊天入口。
+配对完成后，打开或重新进入 Muse 的语音口令是 **「Hi Rokid, OpenMuse」**。眼镜上的 Muse 图标仅用于配对，不是聊天入口。
+
+> **全球版 Rokid App 已知问题：** 目前无法通过语音打开或重新进入通过 CLI 安装的 AIUI 智能体，包括 Muse。修复前，请将眼镜连接到电脑，在发布文件夹运行 `python3 scripts/setup.py open`。进展见 [issue #3](https://github.com/Eis4TY/rokid-muse-aiui/issues/3)。
 
 长按触控板录音，单击结束，选择「发送」。Muse 转写音频并返回回复；滚动阅读，双击返回。录音时长为 0.3–15 秒，发送或丢弃前仅保存在内存中。
 
